@@ -47,9 +47,9 @@ public class UserController {
 	}
 
 	@PostMapping("/registration")
-	public String saveUser(@RequestBody UserDto userDto) {
-		userService.save(userDto);
-		return "Registration Successful";
+	public User saveUser(@RequestBody UserDto userDto) {
+		User user = userService.save(userDto);
+		return user;
 	}
 
 	@PostMapping("/login")

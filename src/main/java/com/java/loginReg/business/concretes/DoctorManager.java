@@ -1,5 +1,6 @@
 package com.java.loginReg.business.concretes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -75,9 +76,14 @@ public class DoctorManager implements DoctorService{
             existingDoctor.setWorkingDays(newWorkingDays);
 
             // Cancel appointments based on changes in working days
-            List<String> removedDays = Arrays.stream(oldWorkingDays.split(","))
+            List<String> removedDays = oldWorkingDays!=null ? Arrays.stream(oldWorkingDays.split(","))
                     .filter(day -> !newWorkingDays.contains(day))
-                    .toList();
+                    .toList() : new ArrayList<>();
+
+            // Update working hours
+            String newWorkingHours = doctorDto.getWorkingHours();
+            existingDoctor.setWorkingHours(newWorkingHours);
+
 
             List<Appointment> appointmentsToCancel = appointmentDao.findByDoctorIdAndDayIn(existingDoctor.getId(), removedDays);
             appointmentsToCancel.forEach(appointment -> {
