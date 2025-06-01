@@ -25,6 +25,7 @@ import com.java.loginReg.entities.Status;
 @CrossOrigin
 public class AppointmentController {
 
+
     @Autowired
     private AppointmentService appointmentService;
 
