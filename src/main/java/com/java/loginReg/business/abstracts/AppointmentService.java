@@ -22,4 +22,6 @@ public interface AppointmentService {
 	boolean isDoctorAvailable(Long doctorId, String day, String time);
 	
 	Appointment updateAppointment(Long appointmentId, String day, String time);
+
+	List<String> getFilteredAppointmentsByDay(Long doctorId, String day);
 }

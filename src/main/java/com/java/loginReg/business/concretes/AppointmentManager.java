@@ -13,6 +13,9 @@ import com.java.loginReg.entities.Appointment;
 import com.java.loginReg.entities.Doctor;
 import com.java.loginReg.entities.Patient;
 import com.java.loginReg.entities.Status;
+import java.util.ArrayList;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AppointmentManager implements AppointmentService {
@@ -93,6 +96,32 @@ public class AppointmentManager implements AppointmentService {
 
         // If there is an appointment, the doctor is not available at that time
         return appointments.isEmpty();
+    }
+
+    public List<String> getFilteredAppointmentsByDay(Long doctorId, String day) {
+        // Search the database for previously booked appointments for the specified doctor and day
+        List<Appointment> bookedAppointments = appointmentDao.findByDoctorIdAndDay(doctorId, day);
+        List<String> bookedTimes = new ArrayList<>();
+        for(int i=0;i<bookedAppointments.size();i++){
+            bookedTimes.add(bookedAppointments.get(i).getTime());
+        }
+
+        Optional<Doctor> optionalUser = doctorDao.findById(doctorId);
+        List<String> availableSlots = new ArrayList<>();
+        if (optionalUser.isPresent()) {
+            Doctor doctor = optionalUser.get();
+
+            // fetch default working hours of doctor
+            List<String> defaultWorkingHours = List.of(doctor.getWorkingHours().split(","));
+
+            // remove booked slots from default working hours
+            availableSlots = defaultWorkingHours.stream()
+                    .filter(time -> !bookedTimes.contains(time))
+                    .collect(Collectors.toList());
+        }
+
+        // If there is an appointment, the doctor is not available at that time
+        return availableSlots;
     }
 
     // Method to update an appointment

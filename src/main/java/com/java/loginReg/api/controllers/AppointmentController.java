@@ -83,19 +83,16 @@ public class AppointmentController {
 
     // Endpoint to list appointments by patient ID
     @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<Appointment>> getAppointmentsByPatientId(@PathVariable Long patientId) {
+    public ResponseEntity<List<Appointment>> xgetAppointmentsByPatientId(@PathVariable Long patientId) {
         List<Appointment> appointments = appointmentService.getAppointmentsByPatientId(patientId);
         return ResponseEntity.ok(appointments);
     }
 
     // Endpoint to check if a doctor is available on a specific day and time
-    @GetMapping("/check-availability")
-    public ResponseEntity<String> checkAvailability(
-            @RequestParam Long doctorId,
-            @RequestParam String day,
-            @RequestParam String time) {
+    @PostMapping("/check-availability")
+    public ResponseEntity<String> checkAvailability(@RequestBody AppointmentDto appointment) {
 
-        boolean isAvailable = appointmentService.isDoctorAvailable(doctorId, day, time);
+        boolean isAvailable = appointmentService.isDoctorAvailable(appointment.getDoctorId(), appointment.getDay(), appointment.getTime());
 
         if (isAvailable) {
             return ResponseEntity.ok("Doctor is available at this time.");
@@ -115,4 +112,11 @@ public class AppointmentController {
 
         return ResponseEntity.ok(updatedAppointment);
     }
+
+    @PostMapping("/get-filtered-time")
+    public ResponseEntity<List<String>> getFilteredTimeByDay(@RequestBody AppointmentDto appointment ){
+        List<String> days = appointmentService.getFilteredAppointmentsByDay(appointment.getDoctorId(), appointment.getDay());
+        return ResponseEntity.ok(days);
+    }
+
 }
