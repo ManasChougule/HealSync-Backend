@@ -56,9 +56,10 @@ public class DoctorManager implements DoctorService{
     }
 
     // Update doctor information
-    public boolean updateDoctor(Long id, DoctorDto doctorDto) {
-        if (doctorDao.existsById(id)) {
-            Doctor existingDoctor = doctorDao.findById(id).orElseThrow();
+    public boolean updateDoctor(Long userId, DoctorDto doctorDto) {
+        if (doctorDao.existsByUserId(userId)) {
+            Doctor existingDoctor = (Doctor) doctorDao.findByUserId(userId)
+                    .orElseThrow(() -> new RuntimeException("Doctor with given ID not found"));
 
             // Update hospital information
             Hospital hospital = hospitalDao.findByName(doctorDto.getHospital())
