@@ -57,9 +57,10 @@ public class DoctorController {
     }
 
     // Endpoint to retrieve doctor details
-    @GetMapping("/{id}")
-    public DoctorDto getDoctorById(@PathVariable Long id) {
-        Doctor doctor = doctorDao.findById(id).orElseThrow(() -> new RuntimeException("Doctor not found"));
+    @GetMapping("/{userId}")
+    public DoctorDto getDoctorById(@PathVariable Long userId) {
+        Doctor doctor = (Doctor) doctorDao.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Doctor with given user ID not found"));
         User user = doctor.getUser(); // Retrieve doctor's user details
         return new DoctorDto(
                 user.getFirstName(),
@@ -69,8 +70,8 @@ public class DoctorController {
                 user.getRole(),
                 doctor.getWorkingDays(),
                 doctor.getWorkingHours(),
-                doctor.getHospital().getName(),
-                doctor.getSpecialization().getName()
+                doctor.getHospital() != null ? doctor.getHospital().getName() : null,
+                doctor.getSpecialization() != null ? doctor.getSpecialization().getName() : null
         );
     }
 
