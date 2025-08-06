@@ -28,7 +28,11 @@ public class SpecializationController {
 
 	// Endpoint to add a specialization
 	@PostMapping("/add")
-	public ResponseEntity<Specialization> addHospital(@RequestBody Specialization specialization) {
+	public ResponseEntity<Specialization> addHospital(@RequestBody SpecializationRequestDto specializationDto) {
+		Specialization specialization = new Specialization();
+		specialization.setName(specializationDto.getName());
+		specialization.setId(specializationDto.getId()); // optional
+
 		Specialization savedSpecialization = specializationService.addSpecialization(specialization);
 		return ResponseEntity.ok(savedSpecialization);
 	}
