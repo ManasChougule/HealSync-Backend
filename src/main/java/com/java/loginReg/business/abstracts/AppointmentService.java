@@ -30,4 +30,6 @@ public interface AppointmentService {
 	List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary();
 
 	DoctorLoadResponseDTO getDoctorLoadById(Long doctorId);
+
+	DoctorAppointmentSummaryDTO getPatientAppointmentSummary(Long userId);
 }

@@ -2,6 +2,7 @@ package com.java.loginReg.business.concretes;
 
 import java.util.*;
 
+import com.java.loginReg.dataAccess.UserDao;
 import com.java.loginReg.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,9 @@ public class AppointmentManager implements AppointmentService {
 
     @Autowired
     private PatientDao patientDao;
+
+    @Autowired
+    private UserDao userDao;
 
     // Method to create an appointment
     @Override
@@ -160,5 +164,67 @@ public class AppointmentManager implements AppointmentService {
 
         return new DoctorLoadResponseDTO(doctor.getId(), doctorName, loadMap);
     }
+
+
+    public List<Appointment> patientAppointmentSummary(Long patientId) {
+        return appointmentDao.findByPatientId(patientId);
+    }
+
+    public DoctorAppointmentSummaryDTO getPatientAppointmentSummary(Long userId) {
+        // from user id fetch patient id
+        Optional<User> userOpt = userDao.findById(userId);
+
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("User not found with id: " + userId);
+        }
+
+        User user = userOpt.get();
+
+        if (user.getPatient() == null) {
+            throw new RuntimeException("User with id " + userId + " is not a patient.");
+        }
+
+        Long patientId = user.getPatient().getId();
+        List<Appointment> appointments = appointmentDao.findByPatientId(patientId);
+
+        int confirmed = 0, cancelled = 0, pending = 0;
+
+        for (Appointment appt : appointments) {
+            switch (appt.getStatus()) {
+                case CONFIRMED:
+                    confirmed++;
+                    break;
+                case CANCELLED:
+                    cancelled++;
+                    break;
+                case PENDING:
+                    pending++;
+                    break;
+            }
+        }
+
+        int total = appointments.size();
+
+        // Get patient name from Patient -> User
+        if (appointments.isEmpty()) {
+            throw new RuntimeException("No appointments found for patient id: " + patientId);
+        }
+
+        Patient patient = appointments.get(0).getPatient();
+        String firstName = patient.getUser().getFirstName();
+        String lastName = patient.getUser().getLastName();
+        String fullName = firstName + " " + lastName;
+
+        // Reusing DoctorAppointmentSummaryDTO for patient summary
+        return new DoctorAppointmentSummaryDTO(
+                patient.getId(),       // doctorId used as patientId here
+                fullName,              // doctorName used as patientName
+                (long) total,
+                (long) confirmed,
+                (long) pending,
+                (long) cancelled
+        );
+    }
+
 
 }

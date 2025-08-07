@@ -128,4 +128,10 @@ public class AppointmentController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/patient-appointment-summary/{userId}")
+    public ResponseEntity<DoctorAppointmentSummaryDTO> getPatientSummary(@PathVariable Long userId) {
+        return ResponseEntity.ok(appointmentService.getPatientAppointmentSummary(userId));
+    }
+
+
 }
