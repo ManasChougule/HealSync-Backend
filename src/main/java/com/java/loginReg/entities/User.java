@@ -1,5 +1,7 @@
 package com.java.loginReg.entities;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,6 +43,7 @@ public class User {
 	private String lastName;
 	
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonManagedReference
     private Patient patient;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
