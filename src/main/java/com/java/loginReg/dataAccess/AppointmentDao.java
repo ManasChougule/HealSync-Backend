@@ -40,4 +40,12 @@ public interface AppointmentDao extends JpaRepository<Appointment, Long> {
 			"FROM Appointment a GROUP BY a.doctor.id, a.doctor.user.firstName, a.doctor.user.lastName")
 	List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary();
 
+
+	@Query("SELECT a.day, a.status, COUNT(a) " +
+			"FROM Appointment a " +
+			"WHERE a.doctor.id = :doctorId " +
+			"GROUP BY a.day, a.status")
+	List<Object[]> getAppointmentStatusCountPerDay(Long doctorId);
+
+
 }

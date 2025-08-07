@@ -137,4 +137,28 @@ public class AppointmentManager implements AppointmentService {
         return appointmentDao.getDoctorAppointmentSummary();
     }
 
+    @Override
+    public DoctorLoadResponseDTO getDoctorLoadById(Long doctorId) {
+        List<Object[]> results = appointmentDao.getAppointmentStatusCountPerDay(doctorId);
+        Doctor doctor = doctorDao.findById(doctorId).orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        Map<String, DayLoadDTO> loadMap = new HashMap<>();
+
+        for (Object[] row : results) {
+            String day = (String) row[0];
+            String status = row[1].toString();
+            Long count = (Long) row[2];
+
+            DayLoadDTO dayLoad = loadMap.getOrDefault(day, new DayLoadDTO());
+            for (int i = 0; i < count; i++) {
+                dayLoad.incrementStatus(status);
+            }
+            loadMap.put(day, dayLoad);
+        }
+
+        String doctorName = "Dr. " + doctor.getUser().getFirstName() + " " + doctor.getUser().getLastName();
+
+        return new DoctorLoadResponseDTO(doctor.getId(), doctorName, loadMap);
+    }
+
 }

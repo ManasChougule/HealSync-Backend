@@ -2,7 +2,7 @@ package com.java.loginReg.api.controllers;
 
 import java.util.List;
 
-import com.java.loginReg.entities.DoctorAppointmentSummaryDTO;
+import com.java.loginReg.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.java.loginReg.business.abstracts.AppointmentService;
-import com.java.loginReg.entities.Appointment;
-import com.java.loginReg.entities.AppointmentDto;
-import com.java.loginReg.entities.Status;
 
 @RestController
 @RequestMapping("/appointments")
@@ -123,6 +120,12 @@ public class AppointmentController {
     @GetMapping("/doctors-availability-summary")
     public List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary() {
         return appointmentService.getDoctorAppointmentSummary();
+    }
+
+    @GetMapping("/doctor-load/{doctorId}")
+    public ResponseEntity<DoctorLoadResponseDTO> getDoctorLoad(@PathVariable Long doctorId) {
+        DoctorLoadResponseDTO response = appointmentService.getDoctorLoadById(doctorId);
+        return ResponseEntity.ok(response);
     }
 
 }
