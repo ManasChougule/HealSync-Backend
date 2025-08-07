@@ -2,6 +2,7 @@ package com.java.loginReg.api.controllers;
 
 import java.util.List;
 
+import com.java.loginReg.entities.DoctorAppointmentSummaryDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,6 +118,11 @@ public class AppointmentController {
     public ResponseEntity<List<String>> getFilteredTimeByDay(@RequestBody AppointmentDto appointment ){
         List<String> days = appointmentService.getFilteredAppointmentsByDay(appointment.getDoctorId(), appointment.getDay());
         return ResponseEntity.ok(days);
+    }
+
+    @GetMapping("/doctors-availability-summary")
+    public List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary() {
+        return appointmentService.getDoctorAppointmentSummary();
     }
 
 }

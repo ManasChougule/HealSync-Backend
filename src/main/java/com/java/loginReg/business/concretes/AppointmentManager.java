@@ -1,7 +1,8 @@
 package com.java.loginReg.business.concretes;
 
-import java.util.List;
+import java.util.*;
 
+import com.java.loginReg.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,13 +10,9 @@ import com.java.loginReg.business.abstracts.AppointmentService;
 import com.java.loginReg.dataAccess.AppointmentDao;
 import com.java.loginReg.dataAccess.DoctorDao;
 import com.java.loginReg.dataAccess.PatientDao;
-import com.java.loginReg.entities.Appointment;
-import com.java.loginReg.entities.Doctor;
-import com.java.loginReg.entities.Patient;
-import com.java.loginReg.entities.Status;
-import java.util.ArrayList;
-import java.util.Optional;
+
 import java.util.stream.Collectors;
+
 
 @Service
 public class AppointmentManager implements AppointmentService {
@@ -135,4 +132,9 @@ public class AppointmentManager implements AppointmentService {
         }
         return null;
     }
+
+    public List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary() {
+        return appointmentDao.getDoctorAppointmentSummary();
+    }
+
 }

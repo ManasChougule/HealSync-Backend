@@ -1,13 +1,15 @@
 package com.java.loginReg.dataAccess;
 
 import java.util.List;
-import java.util.Set;
 
+
+import com.java.loginReg.entities.DoctorAppointmentSummaryDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.java.loginReg.entities.Appointment;
 import com.java.loginReg.entities.Doctor;
 import com.java.loginReg.entities.Patient;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -28,5 +30,14 @@ public interface AppointmentDao extends JpaRepository<Appointment, Long> {
 
 	 List<Appointment> findByDoctorIdAndDay(Long doctorId, String day);
 
+	@Query("SELECT new com.java.loginReg.entities.DoctorAppointmentSummaryDTO(" +
+			"a.doctor.id, " +
+			"CONCAT(a.doctor.user.firstName, ' ', a.doctor.user.lastName), " +
+			"COUNT(a), " +
+			"SUM(CASE WHEN a.status = com.java.loginReg.entities.Status.CONFIRMED THEN 1 ELSE 0 END), " +
+			"SUM(CASE WHEN a.status = com.java.loginReg.entities.Status.PENDING THEN 1 ELSE 0 END), " +
+			"SUM(CASE WHEN a.status = com.java.loginReg.entities.Status.CANCELLED THEN 1 ELSE 0 END)) " +
+			"FROM Appointment a GROUP BY a.doctor.id, a.doctor.user.firstName, a.doctor.user.lastName")
+	List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary();
 
 }

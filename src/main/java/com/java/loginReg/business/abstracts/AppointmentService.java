@@ -3,6 +3,7 @@ package com.java.loginReg.business.abstracts;
 import java.util.List;
 
 import com.java.loginReg.entities.Appointment;
+import com.java.loginReg.entities.DoctorAppointmentSummaryDTO;
 import com.java.loginReg.entities.Status;
 
 public interface AppointmentService {
@@ -24,4 +25,7 @@ public interface AppointmentService {
 	Appointment updateAppointment(Long appointmentId, String day, String time);
 
 	List<String> getFilteredAppointmentsByDay(Long doctorId, String day);
+
+	List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary();
+
 }
