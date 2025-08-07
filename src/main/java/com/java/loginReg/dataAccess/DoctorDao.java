@@ -19,7 +19,7 @@ public interface DoctorDao extends JpaRepository<Doctor, Long> {
 	
 	void deleteByUser(User user);
 
-	Optional<Object> findByUserId(Long userId);
+	Optional<Doctor> findByUserId(Long userId);
 
 	boolean existsByUserId(Long userId);
 

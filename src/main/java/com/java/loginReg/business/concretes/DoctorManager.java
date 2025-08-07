@@ -5,23 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.java.loginReg.business.abstracts.DoctorService;
-import com.java.loginReg.dataAccess.AppointmentDao;
-import com.java.loginReg.dataAccess.DoctorDao;
-import com.java.loginReg.dataAccess.HospitalDao;
-import com.java.loginReg.dataAccess.SpecializationDao;
-import com.java.loginReg.entities.Appointment;
-import com.java.loginReg.entities.Doctor;
-import com.java.loginReg.entities.DoctorDto;
-import com.java.loginReg.entities.Specialization;
-import com.java.loginReg.entities.Status;
-import com.java.loginReg.entities.User;
-import com.java.loginReg.entities.Hospital;
+import com.java.loginReg.dataAccess.*;
+import com.java.loginReg.entities.*;
+import com.java.loginReg.security.SecurityUtil;
 
 @Service
-public class DoctorManager implements DoctorService{
+public class DoctorManager implements DoctorService {
 
     @Autowired
     private DoctorDao doctorDao;
@@ -35,57 +28,72 @@ public class DoctorManager implements DoctorService{
     @Autowired
     private AppointmentDao appointmentDao;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<Doctor> getAllDoctors() {
         return doctorDao.findAll();
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Doctor save(Doctor doctor) {
         return doctorDao.save(doctor);
     }
 
-    // Find doctor by ID
+    // Doctor or Admin can view doctor by ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     public Doctor getDoctorById(Long id) {
-        return doctorDao.findById(id).orElseThrow(() -> new RuntimeException("Doctor not found"));
+        return doctorDao.findById(id)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
     }
 
-    // Retrieve doctors by specialization
+    // Public or patient can see doctors by specialization (no need to restrict)
     public List<Doctor> findBySpecialization(Specialization specialization) {
-        return doctorDao.findBySpecialization(specialization); // Fetch data from the repository
+        return doctorDao.findBySpecialization(specialization);
     }
 
-    // Update doctor information
+    // ✅ DOCTOR can update *only their* profile
+    @PreAuthorize("hasRole('DOCTOR')")
     public boolean updateDoctor(Long userId, DoctorDto doctorDto) {
+        User currentUser = SecurityUtil.getCurrentUser(userRepository);
+
+        // Block update if current doctor tries to edit someone else's profile
+        if (!currentUser.getId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to update this doctor's profile.");
+        }
+
         if (doctorDao.existsByUserId(userId)) {
-            Doctor existingDoctor = (Doctor) doctorDao.findByUserId(userId)
+            Doctor existingDoctor = doctorDao.findByUserId(userId)
                     .orElseThrow(() -> new RuntimeException("Doctor with given ID not found"));
 
-            // Update hospital information
+            // Hospital
             Hospital hospital = hospitalDao.findByName(doctorDto.getHospital())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid hospital name: " + doctorDto.getHospital()));
             existingDoctor.setHospital(hospital);
 
-            // Update specialization information
+            // Specialization
             Specialization specialization = specializationDao.findByName(doctorDto.getSpecialization())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid specialization name: " + doctorDto.getSpecialization()));
             existingDoctor.setSpecialization(specialization);
 
-            // Update working days
+            // Working days update
             String oldWorkingDays = existingDoctor.getWorkingDays();
             String newWorkingDays = doctorDto.getWorkingDays();
             existingDoctor.setWorkingDays(newWorkingDays);
 
-            // Cancel appointments based on changes in working days
-            List<String> removedDays = oldWorkingDays!=null ? Arrays.stream(oldWorkingDays.split(","))
-                    .filter(day -> !newWorkingDays.contains(day))
-                    .toList() : new ArrayList<>();
+            List<String> removedDays = oldWorkingDays != null
+                    ? Arrays.stream(oldWorkingDays.split(","))
+                        .filter(day -> !newWorkingDays.contains(day))
+                        .toList()
+                    : new ArrayList<>();
 
-            // Update working hours
-            String newWorkingHours = doctorDto.getWorkingHours();
-            existingDoctor.setWorkingHours(newWorkingHours);
+            // Working hours update
+            existingDoctor.setWorkingHours(doctorDto.getWorkingHours());
 
-
+            // Cancel appointments for removed days
             List<Appointment> appointmentsToCancel = appointmentDao.findByDoctorIdAndDayIn(existingDoctor.getId(), removedDays);
             appointmentsToCancel.forEach(appointment -> {
                 appointment.setStatus(Status.CANCELLED);
@@ -95,6 +103,7 @@ public class DoctorManager implements DoctorService{
             doctorDao.save(existingDoctor);
             return true;
         }
+
         return false;
     }
 }

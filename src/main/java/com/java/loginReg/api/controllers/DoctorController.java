@@ -1,4 +1,5 @@
 package com.java.loginReg.api.controllers;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ import com.java.loginReg.entities.User;
 @RequestMapping("/doctors")
 @CrossOrigin(origins = "http://localhost:3000")
 public class DoctorController {
+
     @Autowired
     private DoctorService doctorService;
 
@@ -41,6 +43,8 @@ public class DoctorController {
     @Autowired
     private SpecializationService specializationService;
 
+    // ✅ ADMIN or DOCTOR can view all doctors
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     @GetMapping("/all")
     public ResponseEntity<List<Doctor>> getAllDoctors(@RequestParam Role role) {
         if (role != Role.DOCTOR) {
@@ -50,18 +54,21 @@ public class DoctorController {
         return ResponseEntity.ok(doctors);
     }
 
+    // ✅ Only ADMIN can add doctors
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<Doctor> addDoctor(@RequestBody Doctor doctor) {
         Doctor savedDoctor = doctorService.save(doctor);
         return ResponseEntity.ok(savedDoctor);
     }
 
-    // Endpoint to retrieve doctor details
+    // ✅ Only DOCTOR or ADMIN can view a specific doctor
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     @GetMapping("/{userId}")
     public DoctorDto getDoctorById(@PathVariable Long userId) {
         Doctor doctor = (Doctor) doctorDao.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Doctor with given user ID not found"));
-        User user = doctor.getUser(); // Retrieve doctor's user details
+        User user = doctor.getUser();
         return new DoctorDto(
                 user.getFirstName(),
                 user.getLastName(),
@@ -75,7 +82,8 @@ public class DoctorController {
         );
     }
 
-    // Endpoint to update doctor details
+    // ✅ Only DOCTOR or ADMIN can update
+    @PreAuthorize("hasAnyRole('ADMIN', 'DOCTOR')")
     @PutMapping("/update/{id}")
     public ResponseEntity<String> updateDoctor(@PathVariable Long id, @RequestBody DoctorDto doctorDto) {
         boolean isUpdated = doctorService.updateDoctor(id, doctorDto);
@@ -86,7 +94,7 @@ public class DoctorController {
         }
     }
 
-    // Endpoint to retrieve doctors based on specialization
+    // ✅ PUBLIC - anyone can filter by specialization (OPTIONAL: restrict if needed)
     @GetMapping("/doctors")
     public List<Doctor> getDoctorsBySpecialization(@RequestParam String specializationName) {
         Specialization specialization = specializationService.findByName(specializationName);

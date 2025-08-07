@@ -167,4 +167,16 @@ public class UserManager implements UserService {
 
 		return null;  // Return null if user is not found
 	}
+
+	@Override
+	public boolean deleteUserById(Long id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean updateUserRole(Long id, String upperCase) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

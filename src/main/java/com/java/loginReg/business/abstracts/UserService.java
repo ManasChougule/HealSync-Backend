@@ -26,4 +26,8 @@ public interface UserService {
 	User getUserByEmail(String email);
 
 	Map<String, Object> getUserIdByCredentials(String email, String password, Role role);
+
+	boolean deleteUserById(Long id);
+
+	boolean updateUserRole(Long id, String upperCase);
 }

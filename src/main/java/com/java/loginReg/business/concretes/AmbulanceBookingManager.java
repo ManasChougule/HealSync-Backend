@@ -4,10 +4,13 @@ import com.java.loginReg.business.abstracts.AmbulanceBookingService;
 import com.java.loginReg.dataAccess.AmbulanceBookingDao;
 import com.java.loginReg.dataAccess.AmbulanceDao;
 import com.java.loginReg.dataAccess.HospitalDao;
-import com.java.loginReg.entities.Ambulance;
-import com.java.loginReg.entities.AmbulanceBooking;
-import com.java.loginReg.entities.AmbulanceBookingDto;
+import com.java.loginReg.dataAccess.UserRepository;
+import com.java.loginReg.entities.*;
+import com.java.loginReg.security.SecurityUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,6 +29,10 @@ public class AmbulanceBookingManager implements AmbulanceBookingService {
     @Autowired
     private HospitalDao hospitalDao;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public Ambulance addAmbulance(Ambulance ambulance) {
         ambulance.setStatus("available"); // default status
@@ -37,6 +44,7 @@ public class AmbulanceBookingManager implements AmbulanceBookingService {
         return ambulanceDao.findByStatus("available");
     }
 
+    @PreAuthorize("hasRole('PATIENT')")
     @Override
     public String bookAmbulance(AmbulanceBookingDto bookingDto) {
         Optional<Ambulance> optionalAmbulance = ambulanceDao.findById(bookingDto.getAmbulanceId());
@@ -44,7 +52,7 @@ public class AmbulanceBookingManager implements AmbulanceBookingService {
         if (optionalAmbulance.isPresent()) {
             Ambulance ambulance = optionalAmbulance.get();
 
-            // ✅ Check if already booked
+            // ❌ If already booked
             if ("unavailable".equalsIgnoreCase(ambulance.getStatus())) {
                 return "Ambulance already booked!";
             }
@@ -57,6 +65,7 @@ public class AmbulanceBookingManager implements AmbulanceBookingService {
             booking.setAmbulance(ambulance);
             booking.setHospital(hospitalDao.findById(bookingDto.getHospitalId()).orElse(null));
             booking.setBookingTime(LocalDateTime.now());
+
             ambulanceBookingDao.save(booking);
 
             // ✅ Mark ambulance as unavailable
@@ -69,6 +78,7 @@ public class AmbulanceBookingManager implements AmbulanceBookingService {
         return "Ambulance not found.";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public List<AmbulanceBooking> getAllBookings() {
         return ambulanceBookingDao.findAll();
