@@ -1,20 +1,19 @@
 package com.java.loginReg.api.controllers;
 
-import java.util.List;
-
-import com.java.loginReg.business.abstracts.AmbulanceBookingService;
+import com.java.loginReg.business.abstracts.AmbulanceService;
+import com.java.loginReg.entities.Ambulance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.java.loginReg.entities.Ambulance;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ambulances")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AmbulanceController {
 
     @Autowired
-    private AmbulanceBookingService ambulanceService;
+    private AmbulanceService ambulanceService;
 
     @PostMapping("/add")
     public Ambulance addAmbulance(@RequestBody Ambulance ambulance) {
@@ -25,5 +24,14 @@ public class AmbulanceController {
     public List<Ambulance> getAvailableAmbulances() {
         return ambulanceService.getAvailableAmbulances();
     }
-}
 
+    @GetMapping("/available/{type}")
+    public List<Ambulance> getAvailableAmbulancesByType(@PathVariable String type) {
+        return ambulanceService.getAvailableAmbulancesByType(type);
+    }
+
+    @PostMapping("/book/{id}")
+    public String bookAmbulance(@PathVariable Long id) {
+        return ambulanceService.bookAmbulance(id);
+    }
+}
