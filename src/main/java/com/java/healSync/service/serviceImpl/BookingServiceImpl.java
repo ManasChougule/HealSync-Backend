@@ -17,7 +17,7 @@ import java.util.TimerTask;
 
 @Service
 @RequiredArgsConstructor
-public class BookingServiceImplementation implements BookingService {
+public class BookingServiceImpl implements BookingService {
 
     private final AmbulanceRepository ambulanceRepository;
     private final BookingRepository bookingRepository;

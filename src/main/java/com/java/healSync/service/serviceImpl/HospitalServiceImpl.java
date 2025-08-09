@@ -11,7 +11,7 @@ import com.java.healSync.entity.Hospital;
 import com.java.healSync.dto.HospitalRequestDto;
 
 @Service
-public class HospitalServiceImplementation implements HospitalService {
+public class HospitalServiceImpl implements HospitalService {
 
 	@Autowired
 	private HospitalRepository hospitalDao;

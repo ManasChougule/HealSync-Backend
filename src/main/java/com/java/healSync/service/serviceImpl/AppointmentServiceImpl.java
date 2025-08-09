@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class AppointmentServiceImplementation implements AppointmentService {
+public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private AppointmentRepository appointmentDao;

@@ -23,7 +23,7 @@ import com.java.healSync.entity.User;
 import com.java.healSync.dto.UserDto;
 
 @Service
-public class UserServiceImplementation implements UserService {
+public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;

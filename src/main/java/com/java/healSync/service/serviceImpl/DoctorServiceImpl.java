@@ -20,7 +20,7 @@ import com.java.healSync.enums.Status;
 import com.java.healSync.entity.Hospital;
 
 @Service
-public class DoctorServiceImplementation implements DoctorService{
+public class DoctorServiceImpl implements DoctorService{
 
     @Autowired
     private DoctorRepository doctorDao;

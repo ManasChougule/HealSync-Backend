@@ -11,7 +11,7 @@ import com.java.healSync.entity.Specialization;
 import com.java.healSync.dto.SpecializationRequestDto;
 
 @Service
-public class SpecializationServiceImplementation implements SpecializationService{
+public class SpecializationServiceImpl implements SpecializationService{
 
 	@Autowired
 	private SpecializationRepository specializationRepository;
