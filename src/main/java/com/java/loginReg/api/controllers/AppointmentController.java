@@ -121,7 +121,6 @@ public class AppointmentController {
     public List<DoctorAppointmentSummaryDTO> getDoctorAppointmentSummary() {
         return appointmentService.getDoctorAppointmentSummary();
     }
-
     @GetMapping("/doctor-load/{doctorId}")
     public ResponseEntity<DoctorLoadResponseDTO> getDoctorLoad(@PathVariable Long doctorId) {
         DoctorLoadResponseDTO response = appointmentService.getDoctorLoadById(doctorId);

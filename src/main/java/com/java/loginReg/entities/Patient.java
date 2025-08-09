@@ -1,6 +1,7 @@
 package com.java.loginReg.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,7 +19,8 @@ public class Patient {
 	
 	@OneToOne
 	@JoinColumn(name = "user_id", referencedColumnName = "id")
-	@JsonBackReference
+//	@JsonBackReference
+	@JsonIgnoreProperties({"patient", "doctor"})
 	private User user;
 	
 	public Patient() {

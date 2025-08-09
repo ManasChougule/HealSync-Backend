@@ -43,22 +43,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class)), jwtUtil);
-//        jwtAuthenticationFilter.setFilterProcessesUrl("/auth/login");  // Setting the login URL for JWT authentication
-//
-//        http.csrf(AbstractHttpConfigurer::disable);
-//        http.authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/doctors/**").hasAnyRole("DOCTOR") // to access this endpoint authentication is required and only users with given role are allowed to access the endpoint
-//                        .requestMatchers("/appointments/**").hasAnyRole("ADMIN") // only librarian can access this endpoint
-//                        .requestMatchers("/auth/**", "/public/**").permitAll() // any user can access this endpoints (no need of authentication to access this endpoints)
-//                        .anyRequest().authenticated())
-//                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(this.jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
-//        return http.build(); // Building the security filter chain
-//    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(
