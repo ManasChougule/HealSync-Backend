@@ -5,6 +5,7 @@ import java.util.List;
 import com.java.healSync.entity.Specialization;
 import com.java.healSync.dto.SpecializationRequestDto;
 
+
 public interface SpecializationService {
 
 	Specialization addSpecialization(Specialization specialization);

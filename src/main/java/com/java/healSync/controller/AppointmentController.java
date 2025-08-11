@@ -92,16 +92,8 @@ public class AppointmentController {
 
     // Endpoint to check if a doctor is available on a specific day and time
     @PostMapping("/check-availability")
-    public ResponseEntity<String> checkAvailability(@RequestBody AppointmentDto appointment) {
-
-        boolean isAvailable = appointmentService.isDoctorAvailable(appointment.getDoctorId(), appointment.getDay(), appointment.getTime());
-
-        if (isAvailable) {
-            return ResponseEntity.ok("Doctor is available at this time.");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Doctor is not available at this time.");
-        }
+    public boolean checkAvailability(@RequestBody AppointmentDto appointment) {
+        return appointmentService.isDoctorAvailable(appointment.getDoctorId(), appointment.getDay(), appointment.getTime());
     }
 
     // Endpoint to update an appointment

@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.java.healSync.dto.AuthRequestDto;
+import com.java.healSync.dto.AuthResponseDto;
+import com.java.healSync.repository.DoctorRepository;
+import com.java.healSync.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/registration")
+@RequestMapping("/auth")
 @CrossOrigin
 public class UserController {
 
@@ -37,6 +41,12 @@ public class UserController {
 
 	@Autowired
 	private AppointmentService appointmentService;
+
+	@Autowired
+	private PatientRepository patientRepository;
+
+	@Autowired
+	private DoctorRepository doctorRepository;
 
 	@GetMapping("/registration")
 	public String getRegistrationPage(@ModelAttribute("user") UserDto userDto) {
@@ -50,23 +60,9 @@ public class UserController {
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> loginUser(@RequestBody UserDto userDto) {
-		boolean isAuthenticated = userService.authenticate(userDto.getEmail(), userDto.getPassword(), userDto.getRole());
-
-		if (isAuthenticated) {
-			switch (userDto.getRole()) {
-				case ADMIN:
-					return ResponseEntity.ok("Admin Home Page");
-				case DOCTOR:
-					return ResponseEntity.ok("Doctor Home Page");
-				case PATIENT:
-					return ResponseEntity.ok("Patient Home Page");
-				default:
-					return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid role");
-			}
-		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials or role");
-		}
+	public ResponseEntity<AuthResponseDto> loginUser(@RequestBody AuthRequestDto authRequestDto) {
+		AuthResponseDto response = userService.authenticateAndGetToken(authRequestDto);
+		return ResponseEntity.ok(response);
 	}
 
 	// Endpoint to retrieve all users
@@ -137,4 +133,19 @@ public class UserController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "User not found"));
 		}
 	}
+
+	@GetMapping("/patientId-by-user/{userId}")
+	public ResponseEntity<Long> getPatientIdByUserId(@PathVariable Long userId) {
+		return patientRepository.findByUserId(userId)
+				.map(patient -> ResponseEntity.ok(patient.getId()))
+				.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+	}
+
+	@GetMapping("/doctorId-by-user/{userId}")
+	public ResponseEntity<Long> getDoctorIdByUserId(@PathVariable Long userId) {
+		return doctorRepository.findByUserId(userId)
+				.map(doctor -> ResponseEntity.ok(doctor.getId()))
+				.orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+	}
+
 }

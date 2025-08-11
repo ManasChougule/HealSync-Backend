@@ -12,4 +12,6 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByUser(User user);  // Finds the patient based on the user
 
     void deleteByUser(User user);
+
+    Optional<Patient> findByUserId(Long userId);
 }

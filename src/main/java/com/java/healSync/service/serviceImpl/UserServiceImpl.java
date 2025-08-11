@@ -4,8 +4,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.HashMap;
-
+import com.java.healSync.dto.AuthRequestDto;
+import com.java.healSync.dto.AuthResponseDto;
+import com.java.healSync.exception.InvalidCredentialsException;
+import com.java.healSync.exception.InvalidRoleException;
+import com.java.healSync.service.services.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.java.healSync.service.services.UserService;
@@ -40,6 +49,15 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private SpecializationRepository specializationRepository;
 
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Autowired
+	private JwtService jwtService;
+
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
+
 	@Override
 	public User save(UserDto userDto) {
 		// If the role is ADMIN, check if there is another admin
@@ -52,10 +70,11 @@ public class UserServiceImpl implements UserService {
 
 		// Creating a new user object
 		User user = new User(userDto.getEmail(), userDto.getPassword(), userDto.getRole(), userDto.getGender(), userDto.getFirstName(), userDto.getLastName());
-
+//		user.setPassword(bCryptPasswordEncoder
+//				.encode(user.getPassword())); // Encrypting password before saving
 		user = userRepository.save(user);
 
-		// Also save to the relevant table based on the role
+		// Saving to the relevant table based on the role
 		if (userDto.getRole() == Role.PATIENT) {
 			Patient patient = new Patient();
 			patient.setUser(user);  // Associate Patient with User
@@ -76,10 +95,27 @@ public class UserServiceImpl implements UserService {
 		return user;
 	}
 
-	@Override
-	public boolean authenticate(String email, String password, Role role) {
-		User user = userRepository.findByEmail(email);
-		return user != null && user.getPassword().equals(password) && user.getRole() == role;
+
+	public AuthResponseDto authenticateAndGetToken(AuthRequestDto authRequestDto) {
+		try {
+			authenticationManager.authenticate(
+					new UsernamePasswordAuthenticationToken(authRequestDto.getEmail(), authRequestDto.getPassword())
+			);
+		} catch (BadCredentialsException e) {
+			throw new InvalidCredentialsException("Invalid credentials. Please check email/password.");
+		} catch (AuthenticationException e) {
+			throw new InvalidCredentialsException("Authentication failed. Please try again.");
+		}
+
+		User user = userRepository.findByEmail(authRequestDto.getEmail());
+
+		if (user.getRole() == null) {
+			throw new InvalidRoleException("Role(null) is not valid for this account.");
+		}
+
+		String token = jwtService.generateToken(authRequestDto.getEmail());
+		System.out.println("&&&token:-"+token);
+		return new AuthResponseDto(token, user.getRole(), user.getId(), user.getFirstName(), user.getLastName());
 	}
 
 	@Override

@@ -40,6 +40,8 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Retrieve the relevant doctor and patient data
         Doctor doctor = doctorDao.findById(doctorId).orElseThrow(() -> new RuntimeException("Doctor not found"));
         Patient patient = patientRepository.findById(patientId).orElseThrow(() -> new RuntimeException("Patient not found"));
+//        Patient patient = patientRepository.findByUserId(userId)
+//                .orElseThrow(() -> new RuntimeException("Patient not found"));
 
         // Create a new appointment
         Appointment appointment = new Appointment();

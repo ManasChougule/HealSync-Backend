@@ -35,7 +35,7 @@ public class JwtServiceImpl implements JwtService {
                 .subject(email)
                 .issuer("Manas")
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis()+ 60*10*1000))
+                .expiration(new Date(System.currentTimeMillis()+ 10*60*1000))
                 .and()
                 .signWith(getSignKey())
                 .compact();
