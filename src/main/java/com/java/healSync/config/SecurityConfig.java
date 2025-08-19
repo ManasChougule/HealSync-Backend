@@ -1,7 +1,6 @@
 package com.java.healSync.config;
 
 import com.java.healSync.config.filter.JwtAuthFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,30 +28,37 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
 
-    // Constructor injection for required dependencies
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
                           UserDetailsService userDetailsService) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.userDetailsService = userDetailsService;
     }
 
-
-    /* Main security configuration Defines endpoint access rules and JWT filter setup */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // Disable CSRF since we're using JWT
                 .csrf(csrf -> csrf.disable())
-
-                // Authorization rules
                 .authorizeHttpRequests(auth -> auth
 
-                        // Allow preflight OPTIONS requests
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // <-- Add this line
+                        // Allow preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Public access
-                        .requestMatchers("/auth/login", "/auth/registration", "/specialization/all").permitAll()
+                        // Allow static resources (React build)
+                        .requestMatchers(
+                                "/",                // root
+                                "/index.html",      // main entry point
+                                "/static/**",       // static files
+                                "/*.ico",
+                                "/*.png",
+                                "/*.jpg",
+                                "/*.svg",
+                                "/*.css",
+                                "/*.js"
+                        ).permitAll()
+
+                        // Public API endpoints
+                        .requestMatchers("/auth/login", "/auth/registration").permitAll()
 
                         // Admin + Patient access
                         .requestMatchers(
@@ -67,7 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/all?role=ADMIN").hasRole("ADMIN")
                         .requestMatchers("/auth/delete/**", "/auth/update/**", "/auth/appointments/**", "/appointments/doctors-availability-summary").hasRole("ADMIN")
 
-                        // Allow PATIENT role to access /doctors/doctors endpoint
+                        // Allow PATIENT role to access /doctors/doctors
                         .requestMatchers("/doctors/doctors").hasRole("PATIENT")
 
                         // Admin + Doctor access
@@ -76,22 +82,19 @@ public class SecurityConfig {
                                 "/appointments/doctor/**",
                                 "/hospitals/all",
                                 "/appointments/doctor-load/**"
-                        ).hasAnyRole( "ADMIN", "DOCTOR")
+                        ).hasAnyRole("ADMIN", "DOCTOR")
 
                         // Doctor only
                         .requestMatchers("/doctors/update/**").hasRole("DOCTOR")
 
-                        // Any other request needs authentication (no role restriction)
-                        .anyRequest().authenticated()
+                        // Any API request needs authentication
+                        .requestMatchers("/api/**").authenticated()
+
+                        // Any other request (frontend routes) → allow and serve index.html
+                        .anyRequest().permitAll()
                 )
-
-                // Stateless session (required for JWT)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // Set custom authentication provider
                 .authenticationProvider(authenticationProvider())
-
-                // Add JWT filter before Spring Security's default filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -102,17 +105,15 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowCredentials(true);
-        configuration.addAllowedOrigin("http://localhost:3000"); // Allow specific origin
-        configuration.addAllowedHeader("*"); // Allow all headers
-        configuration.addAllowedMethod("*"); // Allow all HTTP methods
-        source.registerCorsConfiguration("/**", configuration); // Apply to all paths
+        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-    /*  Password encoder bean (uses BCrypt hashing)  Critical for secure password storage */
     @Bean
     public PasswordEncoder passwordEncoder() {
-//        return new BCryptPasswordEncoder();
         return NoOpPasswordEncoder.getInstance();
     }
 
@@ -121,10 +122,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(14);
     }
 
-    /*
-     * Authentication provider configuration
-     * Links UserDetailsService and PasswordEncoder
-     */
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -133,7 +130,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    /*Authentication manager bean Required for programmatic authentication */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
